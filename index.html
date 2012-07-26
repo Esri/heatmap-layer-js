@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+        <!--The viewport meta tag is used to improve the presentation and behavior
+        of the samples on iOS devices-->
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"
+        />
+        <title>Heatmap.js Adapter</title>
+        <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.0/js/dojo/dijit/themes/claro/claro.css">
+        <style>
+            html, body {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .esriScalebar {
+                padding: 20px 20px;
+            }
+            #map {
+                padding:0;
+                border:1px solid #000;
+            }
+            #container {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+            }
+            .buttonContainer {
+                position:absolute;
+                z-index:99;
+                top:10px;
+                right:10px;
+            }
+            .mapButton {
+                --moz-box-shadow:inset 0px 1px 0px 0px #cae3fc;
+                -webkit-box-shadow:inset 0px 1px 0px 0px #cae3fc;
+                box-shadow:inset 0px 1px 0px 0px #cae3fc;
+                background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #79bbff), color-stop(1, #4197ee));
+                background:-moz-linear-gradient(center top, #79bbff 5%, #4197ee 100%);
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#79bbff', endColorstr='#4197ee');
+                background-color:#79bbff;
+                -moz-border-radius:6px;
+                -webkit-border-radius:6px;
+                border-radius:6px;
+                border:1px solid #469df5;
+                display:inline-block;
+                color:#ffffff;
+                font-family:arial;
+                font-size:15px;
+                font-weight:bold;
+                padding:6px 24px;
+                text-decoration:none;
+                text-shadow:1px 1px 0px #287ace;
+                text-decoration: none;
+                cursor: pointer;
+                font-weight: normal;
+                white-space: nowrap;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+                outline: 0;
+            }
+            .mapButton:hover {
+                background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #4197ee), color-stop(1, #79bbff));
+                background:-moz-linear-gradient(center top, #4197ee 5%, #79bbff 100%);
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#4197ee', endColorstr='#79bbff');
+                background-color:#4197ee;
+            }
+            .mapButton:active {
+                position:relative;
+                top:1px;
+            }
+        </style>
+        <script type="text/javascript">
+            var djConfig = {
+                parseOnLoad: true
+            };
+        </script>
+        <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.0"></script>
+        <script type="text/javascript" src="js/heatmap.js"></script>
+        <script type="text/javascript" src="js/heatlayer.js"></script>
+        <script type="text/javascript">
+            dojo.require("dijit.layout.BorderContainer");
+            dojo.require("dijit.layout.ContentPane");
+            dojo.require("esri.map");
+            // Variables
+            var map;
+            var dataPoints = [];
+            var heatLayer;
+            // Load sample JSON Data
+            function getSampleData() {
+                // get JSON data for heat map
+                var requestHandle = esri.request({
+                    url: 'sample_data/san_diego_gas_stations.js',
+                    content: {
+                        f: 'json'
+                    },
+                    handleAs: 'json',
+                    load: function (data) {
+                        // data points for heatmap
+                        dataPoints = data;
+                        // set heatmap data
+                        heatLayer.setData(dataPoints);
+                    }
+                }, {
+                    useProxy: false
+                });
+            }
+
+            // empty data points and clear heat layer data
+            function clearSampleData() {
+                dataPoints = [];
+                heatLayer.clearData();
+            }
+
+            // Init
+            function init() {
+                // initial extent of map
+                var initExtent = new esri.geometry.Extent({
+                    "xmin": -13073214.7832198,
+                    "ymin": 3874734.0334393103,
+                    "xmax": -13002701.624626819,
+                    "ymax": 3901334.1192825157,
+                    "spatialReference": {
+                        "wkid": 102100
+                    }
+                });
+                // create map
+                map = new esri.Map("map", {
+                    extent: initExtent
+                });
+                //Add the topographic layer to the map. View the ArcGIS Online site for services http://arcgisonline/home/search.html?t=content&f=typekeywords:service    
+                var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
+                map.addLayer(basemap);
+                // once map is loaded
+                dojo.connect(map, 'onLoad', function (theMap) {
+                    //resize the map when the browser resizes
+                    dojo.connect(dijit.byId('map'), 'resize', map, map.resize);
+                    // create heat layer
+                    heatLayer = new HeatmapLayer({
+                        // "radius": 40,
+                        // "gradient": {
+                        // 0.45: "rgb(000,000,255)",
+                        // 0.55: "rgb(000,255,255)",
+                        // 0.65: "rgb(000,255,000)",
+                        // 0.95: "rgb(255,255,000)",
+                        // 1.00: "rgb(255,000,000)"
+                        // },
+                        "map": map,
+                        "domNodeId": "heatLayer",
+                        "opacity": 0.85
+                    });
+                    // add heat layer to map
+                    map.addLayer(heatLayer);
+                    // resize map
+                    map.resize();
+                    // On map click
+                    dojo.connect(map, "onClick", function (evt) {
+                        // add x,y of click event to data point array
+                        dataPoints.push(evt.mapPoint);
+                        // set heatLayer data from dataPoints
+                        heatLayer.setData(dataPoints);
+                    });
+                });
+            }
+            // call init on load of dojo
+            dojo.addOnLoad(init);
+        </script>
+    </head>
+    
+    <body class="claro">
+        <div id="container" dojotype="dijit.layout.BorderContainer" design="headline"
+        gutters="false">
+            <div id="heatLayer"></div>
+            <div class="buttonContainer">
+                <span class="mapButton" onclick="clearSampleData();">Clear Data Points</span>
+                <span class="mapButton" onclick="getSampleData();">San Diego Gas Stations</span>
+            </div>
+            <div id="map" dojotype="dijit.layout.ContentPane" region="center"></div>
+        </div>
+    </body>
+
+</html>
