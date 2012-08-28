@@ -1,4 +1,3 @@
-
 This is a custom DynamicMapServiceLayer for Heatmap.js to work with the ArcGIS Javascript API.
 
 About heatmap.js
@@ -10,5 +9,5 @@ The library is dual-licensed under the MIT and the Beerware license, feel free t
 
 http://www.arcgis.com/home/item.html?id=3a6d8158252e4b96a8ecfb8b912df78d
 
-## [Live Demo](http://esri.github.com/ArcGIS-Heatmap-Layer--heatmap.js-/)
+## [Live Demo](http://esri.github.com/esri-heatmap.js/)
 
