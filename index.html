@@ -29,6 +29,23 @@
                 height: 100%;
                 margin: 0;
             }
+            #title {
+                font-family:arial;
+                display:inline-block;
+                position:absolute;
+                font-weight:bold;
+                font-size:21px;
+                line-height:28px;
+                top:20px;
+                right:20px;
+                z-index:99;
+                background:rgba(255, 255, 255, 0.65);
+                padding:10px 20px;
+                -webkit-border-radius: 3px;
+                border-radius: 3px;
+                text-shadow:1px 1px 1px #FFFFFF -webkit-box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+                box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+            }
         </style>
         <script type="text/javascript">
             var djConfig = {
@@ -86,7 +103,8 @@
                 });
                 // create map
                 map = new esri.Map("map", {
-                    extent: initExtent
+                    extent: initExtent,
+                    sliderStyle: "small"
                 });
                 //Add the topographic layer to the map. View the ArcGIS Online site for services http://arcgisonline/home/search.html?t=content&f=typekeywords:service    
                 var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
@@ -136,7 +154,9 @@
         <div id="container" dojotype="dijit.layout.BorderContainer" design="headline"
         gutters="false">
             <div id="heatLayer"></div>
-            <div id="map" dojotype="dijit.layout.ContentPane" region="center"></div>
+            <div id="title">San Francisco Trees</div>
+            <div id="map" dojotype="dijit.layout.ContentPane"
+            region="center"></div>
         </div>
     </body>
 
