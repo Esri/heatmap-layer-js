@@ -6,73 +6,76 @@
         <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
         <!--The viewport meta tag is used to improve the presentation and behavior
         of the samples on iOS devices-->
-        <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"
-        />
-        <title>Heatmap.js Adapter</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>heatmap.js ArcGIS JavaScript API Heatmap Layer</title>
+        <link rel="shortcut icon"
+        type="image/png" href="http://www.patrick-wied.at/img/favicon.png" />
         <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.0/js/dojo/dijit/themes/claro/claro.css">
         <style>
-            html, body {
-                height: 100%;
-                width: 100%;
-                margin: 0;
-                padding: 0;
+            body, html {
+                margin:0;
+                padding:0;
+                font-family:Arial;
             }
-            .esriScalebar {
-                padding: 20px 20px;
+            h1 {
+                margin-bottom:10px;
+            }
+            h2 {
+                margin-top:0;
+            }
+            #main {
+                position:relative;
+                width:1020px;
+                padding:20px;
+                margin:auto;
+            }
+            #heatmapArea {
+                position:relative;
+                float:left;
+                width:800px;
+                height:600px;
+                border:1px dashed black;
+            }
+            #configArea {
+                position:relative;
+                float:left;
+                width:200px;
+                padding:15px;
+                padding-top:0;
+                padding-right:0;
+            }
+            .btn {
+                margin-top:25px;
+                padding:10px 20px 10px 20px;
+                -moz-border-radius:15px;
+                -o-border-radius:15px;
+                -webkit-border-radius:15px;
+                border-radius:15px;
+                border:2px solid black;
+                cursor:pointer;
+                color:white;
+                background-color:black;
             }
             #map {
-                padding:0;
-                border:1px solid #000;
+                width:800px;
+                height:600px;
             }
-            #container {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-            }
-            .buttonContainer {
-                position:absolute;
-                z-index:99;
-                top:10px;
-                right:10px;
-            }
-            .mapButton {
-                --moz-box-shadow:inset 0px 1px 0px 0px #cae3fc;
-                -webkit-box-shadow:inset 0px 1px 0px 0px #cae3fc;
-                box-shadow:inset 0px 1px 0px 0px #cae3fc;
-                background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #79bbff), color-stop(1, #4197ee));
-                background:-moz-linear-gradient(center top, #79bbff 5%, #4197ee 100%);
-                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#79bbff', endColorstr='#4197ee');
-                background-color:#79bbff;
-                -moz-border-radius:6px;
-                -webkit-border-radius:6px;
-                border-radius:6px;
-                border:1px solid #469df5;
-                display:inline-block;
-                color:#ffffff;
+            #title {
                 font-family:arial;
-                font-size:15px;
+                display:inline-block;
+                position:absolute;
                 font-weight:bold;
-                padding:6px 24px;
-                text-decoration:none;
-                text-shadow:1px 1px 0px #287ace;
-                text-decoration: none;
-                cursor: pointer;
-                font-weight: normal;
-                white-space: nowrap;
-                -moz-user-select: none;
-                -webkit-user-select: none;
-                user-select: none;
-                outline: 0;
-            }
-            .mapButton:hover {
-                background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #4197ee), color-stop(1, #79bbff));
-                background:-moz-linear-gradient(center top, #4197ee 5%, #79bbff 100%);
-                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#4197ee', endColorstr='#79bbff');
-                background-color:#4197ee;
-            }
-            .mapButton:active {
-                position:relative;
-                top:1px;
+                font-size:21px;
+                line-height:28px;
+                top:20px;
+                right:20px;
+                z-index:99;
+                background:rgba(255, 255, 255, 0.65);
+                padding:10px 20px;
+                -webkit-border-radius: 3px;
+                border-radius: 3px;
+                text-shadow:1px 1px 1px #FFFFFF -webkit-box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
+                box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.1);
             }
         </style>
         <script type="text/javascript">
@@ -81,57 +84,58 @@
             };
         </script>
         <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.0"></script>
-        <script type="text/javascript" src="js/heatmap.js"></script>
-        <script type="text/javascript" src="js/heatlayer.js"></script>
+        <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/2.3/js/esri/dijit/css/Popup.css"
+        />
+        <script type="text/javascript" src="src/heatmap.js"></script>
+        <script type="text/javascript" src="src/heatmap-arcgis.js"></script>
         <script type="text/javascript">
-            dojo.require("dijit.layout.BorderContainer");
-            dojo.require("dijit.layout.ContentPane");
             dojo.require("esri.map");
+            dojo.require("esri.layers.FeatureLayer");
+
             // Variables
             var map;
-            var dataPoints = [];
             var heatLayer;
-            // Load sample JSON Data
-            function getSampleData() {
-                // get JSON data for heat map
-                var requestHandle = esri.request({
-                    url: 'sample_data/san_diego_gas_stations.js',
-                    content: {
-                        f: 'json'
-                    },
-                    handleAs: 'json',
-                    load: function (data) {
-                        // data points for heatmap
-                        dataPoints = data;
-                        // set heatmap data
-                        heatLayer.setData(dataPoints);
-                    }
-                }, {
-                    useProxy: false
-                });
-            }
+            var featureLayer;
 
-            // empty data points and clear heat layer data
-            function clearSampleData() {
-                dataPoints = [];
-                heatLayer.clearData();
+            // get the features within the current extent from the feature layer
+            function getFeatures() {
+                // set up query
+                var query = new esri.tasks.Query();
+                // only within extent
+                query.geometry = map.extent;
+                // give me all of them!
+                query.where = "1=1";
+                // make sure I get them back in my spatial reference
+                query.outSpatialReference = map.spatialReference;
+                // get em!
+                featureLayer.queryFeatures(query, function (featureSet) {
+                    var data = [];
+                    // if we get results back
+                    if (featureSet && featureSet.features && featureSet.features.length > 0) {
+                        // set data to features
+                        data = featureSet.features;
+                    }
+                    // set heatmap data
+                    heatLayer.setData(data);
+                });
             }
 
             // Init
             function init() {
                 // initial extent of map
                 var initExtent = new esri.geometry.Extent({
-                    "xmin": -13073214.7832198,
-                    "ymin": 3874734.0334393103,
-                    "xmax": -13002701.624626819,
-                    "ymax": 3901334.1192825157,
+                    xmax: -13624229.32056175,
+                    xmin: -13625120.886837104,
+                    ymax: 4548374.604660432,
+                    ymin: 4547966.144290476,
                     "spatialReference": {
                         "wkid": 102100
                     }
                 });
                 // create map
                 map = new esri.Map("map", {
-                    extent: initExtent
+                    extent: initExtent,
+                    sliderStyle: "small"
                 });
                 //Add the topographic layer to the map. View the ArcGIS Online site for services http://arcgisonline/home/search.html?t=content&f=typekeywords:service    
                 var basemap = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer");
@@ -158,12 +162,32 @@
                     map.addLayer(heatLayer);
                     // resize map
                     map.resize();
-                    // On map click
-                    dojo.connect(map, "onClick", function (evt) {
-                        // add x,y of click event to data point array
-                        dataPoints.push(evt.mapPoint);
-                        // set heatLayer data from dataPoints
-                        heatLayer.setData(dataPoints);
+                    // create feature layer to get the points from
+                    featureLayer = new esri.layers.FeatureLayer("http://servicesbeta.esri.com/arcgis/rest/services/SanFrancisco/SFStreetTreesRendered/MapServer/0", {
+                        mode: esri.layers.FeatureLayer.MODE_ONDEMAND,
+                        visible: false
+                    });
+                    map.addLayer(featureLayer);
+                    // get features from this layer
+                    getFeatures();
+                    // on map extent change
+                    dojo.connect(map, "onExtentChange", function (extent) {
+                        // get features
+                        getFeatures();
+                    });
+                    dojo.connect(dojo.byId('tog'), "onclick", function () {
+                        if (heatLayer.visible) {
+                            heatLayer.hide();
+                        } else {
+                            heatLayer.show();
+                        }
+                    });
+                    dojo.connect(dojo.byId('tog2'), "onclick", function () {
+                        if (featureLayer.visible) {
+                            featureLayer.hide();
+                        } else {
+                            featureLayer.show();
+                        }
                     });
                 });
             }
@@ -173,14 +197,32 @@
     </head>
     
     <body class="claro">
-        <div id="container" dojotype="dijit.layout.BorderContainer" design="headline"
-        gutters="false">
-            <div id="heatLayer"></div>
-            <div class="buttonContainer">
-                <span class="mapButton" onclick="clearSampleData();">Clear Data Points</span>
-                <span class="mapButton" onclick="getSampleData();">San Diego Gas Stations</span>
+        <div id="main">
+            	<h1>ArcGIS JavaScript API Heatmap Overlay</h1>
+	<a href="http://www.patrick-wied.at/static/heatmapjs/" title="heatmap.js">Back to the project page</a>
+
+            <br
+            />
+            <br />
+            <div id="heatmapArea">
+                <div id="heatLayer"></div>
+                <div id="title">San Francisco Trees</div>
+                <div id="map"></div>
             </div>
-            <div id="map" dojotype="dijit.layout.ContentPane" region="center"></div>
+            <div id="configArea">
+                	<h2>Sidenotes</h2>
+This is a demonstration of a canvas heatmap overlay with the <a href="http://help.arcgis.com/en/webapi/javascript/arcgis/"
+                target="_blank">ArcGIS API for JavaScript</a>.
+                <br />
+                <br />View the <a href="http://servicesbeta.esri.com/arcgis/rest/services/SanFrancisco/SFStreetTreesRendered/MapServer/0"
+                target="_blank">Feature layer</a>.
+                <div id="tog" class="btn">Toggle HeatmapOverlay</div>
+                <div id="tog2" class="btn">Toggle Tree Points</div>
+            </div>
+            <div style="position:absolute;width:940px;top:750px;text-align:center;"><a href="http://www.patrick-wied.at/static/heatmapjs/">heatmap.js</a> by
+                <a
+                href="http://www.patrick-wied.at" target="_blank">Patrick Wied</a>
+            </div>
         </div>
     </body>
 
