@@ -1,8 +1,10 @@
 # heatmap-layer-js
 
-## Features
 This is a custom DynamicMapServiceLayer for Heatmap.js to work with the ArcGIS Javascript API.
 
+[View it live](http://esri.github.com/heatmap-layer-js/)
+
+## Features
 [http://www.patrick-wied.at/static/heatmapjs/](http://www.patrick-wied.at/static/heatmapjs/)
 heatmap.js is a JavaScript library that can be used to generate web heatmaps with the html5canvas element based on your data. Heatmap instances contain a store in order to colorize the heatmap based on relative data, which means if you're adding only a single datapoint to the store it will be displayed as the hottest(red) spot, then adding another point with a higher count, it will dynamically recalculate. The heatmaps are fully customizable - you're welcome to choose your own color gradient, change its opacity, datapoint radius and many more.
 
