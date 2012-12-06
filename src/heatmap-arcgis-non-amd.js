@@ -1,20 +1,17 @@
-require([
-    "dojo/_base/declare",
-    "dojo/dom-construct",
-    "dojo/query",
-	"dojo/dom-style",
-	"dojo/_base/connect",
-    "esri", // We're not directly using anything defined in esri.js but geometry, locator and utils are not AMD. So, the only way to get reference to esri object is through esri module (ie. esri/main)
-    "esri/geometry",
-    "esri/utils"
-],
-function(declare, domConstruct, query, domStyle, connect, esri) {
-    declare("HeatmapLayer", [esri.layers.DynamicMapServiceLayer], {
+dojo.addOnLoad(function () {
+    dojo.declare("HeatmapLayer", [esri.layers.DynamicMapServiceLayer], {
+        /*
+	{
+		map: <a handle to the map>,
+		domNodeId: <an id to the domNode>,
+	}
+	*/
+        // variables
         properties: {},
         heatMap: null,
         // constructor
         constructor: function (properties) {
-            declare.safeMixin(this.properties, properties);
+            dojo.safeMixin(this.properties, properties);
             // map var
             this._map = this.properties.map;
             // last data storage
@@ -39,7 +36,7 @@ function(declare, domConstruct, query, domStyle, connect, esri) {
                 }
             };
             // mix in config for heatmap.js settings
-            declare.safeMixin(this.config, properties.config);
+            dojo.safeMixin(this.config, properties.config);
             // create heatmap
             this.heatMap = heatmapFactory.create(this.config);
             // loaded
@@ -47,9 +44,8 @@ function(declare, domConstruct, query, domStyle, connect, esri) {
             this.onLoad(this);
             // global maximum value
             this.globalMax = 0;
-			var _self = this;
             // connect on resize
-			connect.connect(this._map, "onResize", this, this.resizeHeatmap);
+            dojo.connect(this._map, "onResize", this, this.resizeHeatmap);
             // heatlayer div styling
             this.domNode.style.position = 'relative';
             this.domNode.style.display = 'none';
@@ -59,12 +55,12 @@ function(declare, domConstruct, query, domStyle, connect, esri) {
             this.heatMap.set("width", width);
             this.heatMap.set("height", height);
             // set width and height of container
-            domStyle.set(this.domNode, {
+            dojo.style(this.domNode, {
                 "width": width + 'px',
                 "height": height + 'px'
             });
             // set width and height of canvas element inside of container
-            var child = query(':first-child', this.domNode);
+            var child = dojo.query(':first-child', this.domNode);
             if (child) {
                 child.attr('width', width);
                 child.attr('height', height);
@@ -201,7 +197,7 @@ function(declare, domConstruct, query, domStyle, connect, esri) {
                 // push to data
                 this.lastData.push(feature);
                 // set data
-                this.setData(this.lastData);
+                setData(this.lastData);
             }
         },
         // return data set of features
