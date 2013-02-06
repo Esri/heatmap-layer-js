@@ -53,3 +53,5 @@ A copy of the license is available in the repository's [license.txt](https://raw
 Access and Use Constraints
 The library is dual-licensed under the MIT and the Beerware license, feel free to use it in your projects.
 
+[](Esri Tags: ArcGIS JavaScript Heatmap Layer Sample Public)
+[](Esri Language: JavaScript)
