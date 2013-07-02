@@ -1,23 +1,35 @@
-dojo.addOnLoad(function () {
-    dojo.declare("HeatmapLayer", [esri.layers.DynamicMapServiceLayer], {
-        /*
-	{
-		map: <a handle to the map>,
-		domNodeId: <an id to the domNode>,
-	}
-	*/
-        // variables
-        properties: {},
-        heatMap: null,
+define([
+    "dojo/_base/declare",
+    "dijit/_WidgetBase",
+    "dojo/dom-construct",
+    "dojo/dom",
+    "dojo/query",
+    "dojo/dom-style",
+    "dojo/on",
+    "esri/layers/DynamicMapServiceLayer",
+    "esri/geometry/screenUtils",
+    "esri/geometry/Point"
+], function(
+    declare,
+    _WidgetBase,
+    domConstruct,
+    dom,
+    query,
+    domStyle,
+    on, 
+    DynamicMapServiceLayer,
+    screenUtils,
+    Point
+) {
+    return declare("modules.HeatmapLayer", [_WidgetBase, DynamicMapServiceLayer], {
         // constructor
-        constructor: function (properties) {
-            dojo.safeMixin(this.properties, properties);
+        constructor: function(properties, srcNode) {
             // map var
-            this._map = this.properties.map;
+            this._map = properties.map;
             // last data storage
-            this.lastData = [];
+            this.set("data", []);
             // map node
-            this.domNode = document.getElementById(this.properties.domNodeId);
+            this.domNode = dom.byId(srcNode);
             // config
             this.config = {
                 element: this.domNode,
@@ -36,31 +48,47 @@ dojo.addOnLoad(function () {
                 }
             };
             // mix in config for heatmap.js settings
-            dojo.safeMixin(this.config, properties.config);
+            declare.safeMixin(this.config, properties.config);
             // create heatmap
             this.heatMap = heatmapFactory.create(this.config);
-            // loaded
-            this.loaded = true;
-            this.onLoad(this);
             // global maximum value
-            this.globalMax = 0;
+            this.set("globalMax", 0);
+            var _self = this;
             // connect on resize
-            dojo.connect(this._map, "onResize", this, this.resizeHeatmap);
+            this._listeners = [];
+            var mapResize = on(this._map, "resize", function(extent, width, height) {
+                _self.resizeHeatmap(extent, width, height);
+            });
+            this._listeners.push(mapResize);
             // heatlayer div styling
-            this.domNode.style.position = 'relative';
-            this.domNode.style.display = 'none';
+            domStyle.set(this.domNode, {
+                position: "absolute",
+                display: "none" 
+            });
+            // loaded
+            this.set("loaded",true);
+            this.onLoad(this);
         },
-        resizeHeatmap: function (extent, width, height) {
+        // connections/subscriptions will be cleaned up during the destroy() lifecycle phase
+        destroy: function() {
+            if (this._listeners.length) {
+                for (var i = 0; i < this._listeners.length; i++) {
+                    this._listeners[i].remove();
+                }
+            }
+            this.inherited(arguments);
+        },
+        resizeHeatmap: function(extent, width, height) {
             // set heatmap data size
             this.heatMap.set("width", width);
             this.heatMap.set("height", height);
             // set width and height of container
-            dojo.style(this.domNode, {
+            domStyle.set(this.domNode, {
                 "width": width + 'px',
                 "height": height + 'px'
             });
             // set width and height of canvas element inside of container
-            var child = dojo.query(':first-child', this.domNode);
+            var child = query(':first-child', this.domNode);
             if (child) {
                 child.attr('width', width);
                 child.attr('height', height);
@@ -74,14 +102,14 @@ dojo.addOnLoad(function () {
             this.refresh();
         },
         // stores heatmap converted data into the plugin which renders it
-        storeHeatmapData: function (heatPluginData) {
+        storeHeatmapData: function(heatPluginData) {
             // set heatmap data
             this.heatMap.store.setDataSet(heatPluginData);
         },
         // converts parsed data into heatmap format
-        convertHeatmapData: function (parsedData) {
+        convertHeatmapData: function(parsedData) {
             // variables
-            var xParsed, yParsed, heatPluginData, dataPoint, screenGeometry;
+            var xParsed, yParsed, heatPluginData, screenGeometry;
             // set heat plugin data object
             heatPluginData = {
                 max: parsedData.max,
@@ -97,7 +125,7 @@ dojo.addOnLoad(function () {
                         for (yParsed in parsedData.data[xParsed]) {
                             if (parsedData.data[xParsed].hasOwnProperty(yParsed)) {
                                 // convert data point into screen geometry
-                                screenGeometry = esri.geometry.toScreenGeometry(this._map.extent, this._map.width, this._map.height, parsedData.data[xParsed][yParsed].dataPoint);
+                                screenGeometry = screenUtils.toScreenGeometry(this._map.extent, this._map.width, this._map.height, parsedData.data[xParsed][yParsed].dataPoint);
                                 // push to heatmap plugin data array
                                 heatPluginData.data.push({
                                     x: screenGeometry.x,
@@ -113,7 +141,7 @@ dojo.addOnLoad(function () {
             this.storeHeatmapData(heatPluginData);
         },
         // runs through data and calulates weights and max
-        parseHeatmapData: function (features) {
+        parseHeatmapData: function(features) {
             // variables
             var i, parsedData, dataPoint, attributes;
             // if data points exist
@@ -124,12 +152,12 @@ dojo.addOnLoad(function () {
                     data: []
                 };
                 if (!this.config.useLocalMaximum) {
-                    parsedData.max = this.globalMax;
+                    parsedData.max = this.get("globalMax");
                 }
                 // for each data point
                 for (i = 0; i < features.length; i++) {
                     // create geometry point
-                    dataPoint = esri.geometry.Point(features[i].geometry.x, features[i].geometry.y, this._map.spatialReference);
+                    dataPoint = Point(features[i].geometry.x, features[i].geometry.y, this._map.spatialReference);
                     // check point
                     var validPoint = false;
                     // if not using local max, point is valid
@@ -137,7 +165,7 @@ dojo.addOnLoad(function () {
                         validPoint = true;
                     }
                     // using local max, make sure point is within extent
-                    else if(this._map.extent.contains(dataPoint)){
+                    else if (this._map.extent.contains(dataPoint)) {
                         validPoint = true;
                     }
                     if (validPoint) {
@@ -170,10 +198,9 @@ dojo.addOnLoad(function () {
                             // set max to this count
                             parsedData.max = parsedData.data[dataPoint.x][dataPoint.y].count;
                             if (!this.config.useLocalMaximum) {
-                                this.globalMax = parsedData.data[dataPoint.x][dataPoint.y].count;
+                                this.set("globalMax", parsedData.data[dataPoint.x][dataPoint.y].count);
                             }
                         }
-
                     }
                 }
                 // convert parsed data into heatmap plugin formatted data
@@ -181,31 +208,33 @@ dojo.addOnLoad(function () {
             }
         },
         // set data function call
-        setData: function (features) {
+        setData: function(features) {
             // set width/height
             this.resizeHeatmap(null, this._map.width, this._map.height);
             // store points
-            this.lastData = features;
+            this.set("data", features);
             // create data and then store it
             this.parseHeatmapData(features);
             // redraws the heatmap
             this.refresh();
         },
         // add one feature to the heatmap
-        addDataPoint: function (feature) {
+        addDataPoint: function(feature) {
             if (feature) {
                 // push to data
-                this.lastData.push(feature);
+                var data = this.get("data");
+                data.push(feature);
+                this.set("data", data);
                 // set data
-                setData(this.lastData);
+                this.setData(this.get("data"));
             }
         },
         // return data set of features
-        exportDataSet: function () {
-            return this.lastData;
+        exportDataSet: function() {
+            return this.get("data");
         },
         // clear data function
-        clearData: function () {
+        clearData: function() {
             // empty heat map
             this.heatMap.clear();
             // empty array
@@ -214,9 +243,9 @@ dojo.addOnLoad(function () {
             this.setData(empty);
         },
         // get image
-        getImageUrl: function (extent, width, height, callback) {
+        getImageUrl: function(extent, width, height, callback) {
             // create heatmap data using last data
-            this.parseHeatmapData(this.lastData);
+            this.parseHeatmapData(this.get("data"));
             // image data
             var imageUrl = this.heatMap.get("canvas").toDataURL("image/png");
             // callback
