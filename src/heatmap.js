@@ -354,12 +354,13 @@
                 
         },
         resize: function () {
-                var element = this.get("element"),
-                    canvas = this.get("canvas"),
-                    acanvas = this.get("acanvas");
-                canvas.width = acanvas.width = element.style.width.replace(/px/, "") || this.getWidth(element);
+                var me = this,
+                    element = me.get("element"),
+                    canvas = me.get("canvas"),
+                    acanvas = me.get("acanvas");
+                canvas.width = acanvas.width = me.get("width") || element.style.width.replace(/px/, "") || me.getWidth(element);
                 this.set("width", canvas.width);
-                canvas.height = acanvas.height = element.style.height.replace(/px/, "") || this.getHeight(element);
+                canvas.height = acanvas.height = me.get("height") || element.style.height.replace(/px/, "") || me.getHeight(element);
                 this.set("height", canvas.height);
         },
 
@@ -394,8 +395,8 @@
                 if(me.get("debug"))
                     document.body.appendChild(acanvas);
                 
-                actx.shadowOffsetX = 1000; 
-                actx.shadowOffsetY = 1000; 
+                actx.shadowOffsetX = 15000; 
+                actx.shadowOffsetY = 15000; 
                 actx.shadowBlur = 15; 
         },
         initColorPalette: function(){
@@ -556,11 +557,13 @@
                     xc = x + (1.5 * radius) >> 0, yc = y + (1.5 * radius) >> 0;
 
                 ctx.shadowColor = ('rgba(0,0,0,'+((count)?(count/me.store.max):'0.1')+')');
-                ctx.shadowOffsetX = 1000;
-                ctx.shadowOffsetY = 1000;
-                ctx.shadowBlur = 15;
+
+                ctx.shadowOffsetX = 15000; 
+                ctx.shadowOffsetY = 15000; 
+                ctx.shadowBlur = 15; 
+
                 ctx.beginPath();
-                ctx.arc(x - 1000, y - 1000, radius, 0, Math.PI * 2, true);
+                ctx.arc(x - 15000, y - 15000, radius, 0, Math.PI * 2, true);
                 ctx.closePath();
                 ctx.fill();
                 if(colorize){

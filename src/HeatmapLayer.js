@@ -224,9 +224,8 @@ define([
                 // push to data
                 var data = this.get("data");
                 data.push(feature);
-                this.set("data", data);
                 // set data
-                this.setData(this.get("data"));
+                this.setData(data);
             }
         },
         // return data set of features
