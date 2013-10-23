@@ -311,8 +311,8 @@ function getFeatures() {
      
             // create heat layer
             heatLayer = new HeatmapLayer({
+                "useLocalMaximum": false,
                 config: {
-                    "useLocalMaximum": false,
                     "radius": 40,
                     "gradient": {
                         0.45: "rgb(000,000,255)",
