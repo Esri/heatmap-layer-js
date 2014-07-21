@@ -1,5 +1,4 @@
 /* global heatmapFactory */
-
 define([
     "dojo/_base/declare",
     "dojo/_base/lang",
@@ -22,7 +21,7 @@ define([
     screenUtils,
     Point
 ) {
-    return declare("modules.HeatmapLayer", [_WidgetBase, DynamicMapServiceLayer], {
+    return declare([_WidgetBase, DynamicMapServiceLayer], {
         options: {
             useLocalMaximum: false,
             map: null,
