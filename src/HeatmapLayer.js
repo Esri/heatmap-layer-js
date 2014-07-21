@@ -58,11 +58,9 @@ define([
             // global maximum value
             this.set("globalMax", 0);
             // connect on resize
-            this._listeners = [];
-            var mapResize = on(this.get("map"), "resize", lang.hitch(this, function(evt) {
+            this.own(on(this.get("map"), "resize", lang.hitch(this, function(evt) {
                 this.resizeHeatmap(evt.width, evt.height);
-            }));
-            this._listeners.push(mapResize);
+            })));
             // heatlayer div styling
             domStyle.set(this.domNode, {
                 position: "absolute",
@@ -70,15 +68,6 @@ define([
             });
             // loaded
             this.set("loaded",true);
-            this.onLoad(this);
-        },
-        // connections/subscriptions will be cleaned up during the destroy() lifecycle phase
-        destroy: function() {
-            if (this._listeners.length) {
-                for (var i = 0; i < this._listeners.length; i++) {
-                    this._listeners[i].remove();
-                }
-            }
             this.inherited(arguments);
         },
         resizeHeatmap: function(width, height) {
