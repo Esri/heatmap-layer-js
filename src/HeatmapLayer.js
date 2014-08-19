@@ -116,8 +116,10 @@ define([
                         // for all y values and count
                         for (yParsed in parsedData.data[xParsed]) {
                             if (parsedData.data[xParsed].hasOwnProperty(yParsed)) {
+                                // make sure extent is normalized
+                                var normalizedExtent = this.map.extent._normalize();
                                 // convert data point into screen geometry
-                                screenGeometry = screenUtils.toScreenGeometry(this.get("map").extent, this.get("map").width, this.get("map").height, parsedData.data[xParsed][yParsed].dataPoint);
+                                screenGeometry = screenUtils.toScreenGeometry(normalizedExtent, this.get("map").width, this.get("map").height, parsedData.data[xParsed][yParsed].dataPoint);
                                 // push to heatmap plugin data array
                                 heatPluginData.data.push({
                                     x: screenGeometry.x,
@@ -148,8 +150,12 @@ define([
                 }
                 // for each data point
                 for (i = 0; i < features.length; i++) {
+                    // get geometry and normalize it
+                    var geo = features[i].geometry.normalize();
                     // create geometry point
-                    dataPoint = Point(features[i].geometry.x, features[i].geometry.y, this.get("map").spatialReference);
+                    dataPoint = new Point(geo.x, geo.y, this.get("map").spatialReference);
+                    // get extent and normalize it.
+                    var normalizedExtent = this.get("map").extent._normalize();
                     // check point
                     var validPoint = false;
                     // if not using local max, point is valid
@@ -157,7 +163,7 @@ define([
                         validPoint = true;
                     }
                     // using local max, make sure point is within extent
-                    else if (this.get("map").extent.contains(dataPoint)) {
+                    else if (normalizedExtent.contains(dataPoint)) {
                         validPoint = true;
                     }
                     if (validPoint) {

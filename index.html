@@ -90,7 +90,7 @@
             <br />
             <div id="heatmapArea">
                 <div id="heatLayer"></div>
-                <div id="title">San Francisco Trees</div>
+                <div id="title">San Francisco 311 incidents</div>
                 <div id="map"></div>
             </div>
             <div id="configArea">
@@ -98,10 +98,10 @@
 This is a demonstration of a canvas heatmap overlay with the <a href="http://help.arcgis.com/en/webapi/javascript/arcgis/"
                 target="_blank">ArcGIS API for JavaScript</a>.
                 <br />
-                <br />View the <a href="http://servicesbeta.esri.com/arcgis/rest/services/SanFrancisco/SFStreetTreesRendered/MapServer/0"
+                <br />View the <a href="http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/MapServer/0"
                 target="_blank">Feature layer</a>.
                 <div id="tog" class="btn">Toggle HeatmapOverlay</div>
-                <div id="tog2" class="btn">Toggle Tree Points</div>
+                <div id="tog2" class="btn">Toggle Points</div>
                 <div id="tog3" class="btn">Local Max Off</div>
             </div>
             <div style="text-align:center;"><a href="http://www.patrick-wied.at/static/heatmapjs/">heatmap.js</a> by
@@ -152,7 +152,7 @@ This is a demonstration of a canvas heatmap overlay with the <a href="http://hel
 
                 </li>
                 <li>Now you just need to add data points to the heatmap. In the example above,
-                    I am adding features from a feature layer of trees. Here's an example with
+                    I am adding features from a feature layer of 311 incidents. Here's an example with
                     two features. <pre>
         var data = [
             {
@@ -276,7 +276,7 @@ function getFeatures() {
                 featureLayer.queryFeatures(q, function (featureSet) {
                     var data = [];
                     // if we get results back
-                    if (featureSet && featureSet.features && featureSet.features.length > 0) {
+                    if (featureSet && featureSet.features && featureSet.features.length) {
                         // set data to features
                         data = featureSet.features;
                     }
@@ -329,13 +329,11 @@ function getFeatures() {
             // resize map
             map.resize();
             // create feature layer to get the points from
-            featureLayer = new FeatureLayer("http://servicesbeta.esri.com/arcgis/rest/services/SanFrancisco/SFStreetTreesRendered/MapServer/0", {
+            featureLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/MapServer/0", {
                 mode: FeatureLayer.MODE_ONDEMAND,
                 visible: false
             });
             map.addLayer(featureLayer);
-            // get features from this layer
-            getFeatures();
             // on map extent change
             on(map, "extent-change", getFeatures);
             on(dom.byId('tog'), "click", function () {
