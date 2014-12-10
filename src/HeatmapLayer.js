@@ -1,4 +1,4 @@
-/* global heatmapFactory */
+/* global h337 */
 define([
     "dojo/_base/declare",
     "dojo/_base/lang",
@@ -51,10 +51,10 @@ define([
             this.set("useLocalMaximum", defaults.useLocalMaximum);
             defaults.config.height = this.get("map").height;
             defaults.config.width = this.get("map").width;
-            defaults.config.element = this.domNode;
+            defaults.config.container = this.domNode;
             this.set("config", defaults.config);
             // create heatmap
-            this.heatMap = heatmapFactory.create(this.get("config"));
+            this.heatMap = h337.create(this.get("config"));
             // global maximum value
             this.set("globalMax", 0);
             // connect on resize
@@ -72,8 +72,10 @@ define([
         },
         resizeHeatmap: function(width, height) {
             // set heatmap data size
-            this.heatMap.set("width", width);
-            this.heatMap.set("height", height);
+
+            this.heatMap._renderer.setDimensions(width,height);
+            //this.heatMap.set("width", width);
+            //this.heatMap.set("height", height);
             // set width and height of container
             domStyle.set(this.domNode, {
                 "width": width + 'px',
@@ -86,17 +88,17 @@ define([
                 child.attr('height', height);
             }
             // set atx canvas width and height fix
-            var actx = this.heatMap.get("actx");
+           /* var actx = this.heatMap._renderer.shadowCtx;
             actx.canvas.height = height;
             actx.canvas.width = width;
-            this.heatMap.set("actx", actx);
+            this.heatMap._renderer.shadowCtx = actx;*/
             // refresh image and heat map size
             this.refresh();
         },
         // stores heatmap converted data into the plugin which renders it
         storeHeatmapData: function(heatPluginData) {
             // set heatmap data
-            this.heatMap.store.setDataSet(heatPluginData);
+            this.heatMap.setData(heatPluginData);
         },
         // converts parsed data into heatmap format
         convertHeatmapData: function(parsedData) {
@@ -244,7 +246,7 @@ define([
             // create heatmap data using last data
             this.parseHeatmapData(this.get("data"));
             // image data
-            var imageUrl = this.heatMap.get("canvas").toDataURL("image/png");
+            var imageUrl = this.heatMap.getDataURL();
             // callback
             callback(imageUrl);
         }
